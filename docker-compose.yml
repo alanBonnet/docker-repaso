@@ -1,0 +1,55 @@
+version: '1.1'
+
+services:
+  MariaDB:
+    image: mariadb:10.6.14
+    ports:
+      - 3306
+    restart: on-failure
+    environment:
+      - MYSQL_ROOT_PASSWORD=mysecretpassword
+      - MYSQL_DATABASE=AguasFormosa
+
+  MongoDB:
+    image: mongo:6.0
+    ports:
+      - 27017
+    restart: on-failure
+
+  MySQL:
+    image: mysql:8.0.33
+    ports:
+      - 3307
+    restart: on-failure
+    environment:
+      - MYSQL_ROOT_PASSWORD=mysecretpassword
+      - MYSQL_DATABASE=AguasFormosa
+
+  api_aguas_formosa:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      - MariaDB
+      - MongoDB
+      - MySQL
+    restart: on-failure
+    environment:
+      - PORT=3000
+      - DB_HOST_MARIADB=MariaDB
+      - DB_PORT_MARIADB=3306
+      - DB_USER_MARIADB=root
+      - DB_PASSWORD_MARIADB=$DB_PASSWORD_MARIADB
+      - DB_DATABASE_MARIADB=AguasFormosa 
+      - DB_HOST_MYSQL=MySQL
+      - DB_PORT_MYSQL=3307
+      - DB_USER_MYSQL=root
+      - DB_PASSWORD_MYSQL=$DB_PASSWORD_MYSQL
+      - DB_DATABASE_MYSQL=AguasFormosa 
+      - MONGODB_URI=mongodb://MongoDB:27017/AguasFormosa
+
+    volumes:
+      - ./server:/servidor
+      - /servidor/node_modules
